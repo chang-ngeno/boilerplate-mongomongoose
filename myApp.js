@@ -51,7 +51,7 @@ const personModel = new Schema({
   favoriteFoods: [String]
 });
 
-const Person = mongoose.model("PersonModel", personModel);
+const Person = mongoose.model("Person", personModel);
 
 // **Note**: Glitch is a real server, and in real servers interactions with
 // the db are placed in handler functions, to be called when some event happens
@@ -90,11 +90,10 @@ const Person = mongoose.model("PersonModel", personModel);
 
 var createAndSavePerson = function (done) {
   var person = new Person({ name: "jane doe", age: 45, favoriteFoods: ['mayai', 'pilau', 'chapati', 'githeri'] });
-  person.save(err, data, () => {
-    if (err) done(err);
-    done(null , data);
-  })
-
+  person.save((err, data) => {
+    if (err) throw (err);
+    done(null, data);
+  });
 };
 
 /** 4) Create many People with `Model.create()` */
@@ -105,11 +104,16 @@ var createAndSavePerson = function (done) {
 // as the 1st argument, and saves them all in the db.
 // Create many people using `Model.create()`, using the function argument
 // 'arrayOfPeople'.
-
+var arrayOfPeople = [
+  { name: "jane doe", age: 45, favoriteFoods: ['mayai', 'pilau', 'chapati', 'githeri'] },
+  { name: "john doe", age: 45, favoriteFoods: ['pizza', 'burger'] },
+  { name: "jane doe", age: 45, favoriteFoods: ['mursik', 'chapati', 'githeri'] }
+];
 var createManyPeople = function (arrayOfPeople, done) {
-
-  done(null/*, data*/);
-
+  Person.create(arrayOfPeople, (err, data) => {
+    if (err) throw err;
+    done(null, data);
+  });
 };
 
 /** # C[R]UD part II - READ #
@@ -124,9 +128,10 @@ var createManyPeople = function (arrayOfPeople, done) {
 // Use the function argument `personName` as search key.
 
 var findPeopleByName = function (personName, done) {
-
-  done(null/*, data*/);
-
+  Person.find({ name: personName }, (err, data) => {
+    if (err) throw err;
+    done(null, data);
+  });
 };
 
 /** 6) Use `Model.findOne()` */
@@ -139,9 +144,11 @@ var findPeopleByName = function (personName, done) {
 // argument `food` as search key
 
 var findOneByFood = function (food, done) {
-
-  done(null/*, data*/);
-
+  //Person.favoriteFoods.find(element => element === food)
+  Person.findOne({ favoriteFoods: food }, (err, data) => {
+    if (err) throw err;
+    done(null, data);
+  });
 };
 
 /** 7) Use `Model.findById()` */
@@ -154,9 +161,10 @@ var findOneByFood = function (food, done) {
 // Use the function argument 'personId' as search key.
 
 var findPersonById = function (personId, done) {
-
-  done(null/*, data*/);
-
+  Person.findById({ _id: personId }, (err, data) => {
+    if (err) throw err;
+    done(null, data);
+  });
 };
 
 /** # CR[U]D part III - UPDATE # 
@@ -186,8 +194,10 @@ var findPersonById = function (personId, done) {
 
 var findEditThenSave = function (personId, done) {
   var foodToAdd = 'hamburger';
-
-  done(null/*, data*/);
+  var person = findPersonById(personId, done);
+  person.favoriteFoods.push(foodToAdd, () => {
+    person.createAndSavePerson(done);
+  });
 };
 
 /** 9) New Update : Use `findOneAndUpdate()` */
